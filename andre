@@ -1,0 +1,66 @@
+with open('DESCRICAO_SPACY.csv', 'r', encoding="utf8") as arquivo_csv:
+    leitor_csv = csv.reader(arquivo_csv)
+    contador = 0
+    for linha in leitor_csv:
+            contador += 1
+            if contador != 1:
+                lista = linha[0].split(';')
+                desc = lista.pop(0)
+
+
+                cont = -1
+                for la in lista:
+                    cont += 1
+                    if la in desc:
+                        inicio = desc.index(la)
+                        final = desc.index(la) + len(la) 
+
+
+
+
+
+                    else:
+                        inicio = 0
+                        final = 0
+                        la = ''
+
+                    if cont == 0:
+                        item = la
+                        item_pos_ini = inicio
+                        item_pos_final = final
+
+                    elif cont == 1:
+                        variedade = la
+                        variedade_pos_ini = inicio
+                        variedade_pos_final = final
+
+                    elif cont == 2:
+                        marca = la
+                        marca_pos_ini = inicio
+                        marca_pos_final = final
+
+                    else:
+                        quantidade = la
+                        quantidade_pos_ini = inicio
+                        quantidade_pos_final = final
+                        
+                training_data = [(desc, [(item_pos_ini, item_pos_final, "ITEM"), (variedade_pos_ini, variedade_pos_final, "VARIEDADE"), (marca_pos_ini, marca_pos_final, "MARCA"), (quantidade_pos_ini, quantidade_pos_final, "QUANTIDADE")])]
+                for text, annotations in training_data:
+                    doc = nlp(text)
+                    ents = []
+                    for start, end, label in annotations:
+                        span = doc.char_span(start, end, label=label)
+                        ents.append(span)
+                    try:
+                        doc.ents = ents
+                        
+                    except:
+                        break
+                    db.add(doc)
+                db.to_disk("./train.spacy")
+                        
+                        
+                
+                
+            
+            
