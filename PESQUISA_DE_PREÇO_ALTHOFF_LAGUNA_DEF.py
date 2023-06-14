@@ -4,22 +4,20 @@ from time import sleep
 import time
 
 start_time = time.time()
+driver_path = 'C:\Program Files (x86)\chromedriver.exe'
+
+url = 'https://emcasa.althoff.com.br/categorias'
+
+pesq = PesqPrice(driver_path)
+pesq.pesquisar_url(url)
+pesq.local('//*[@id="body"]/div[2]/div[3]/div/div[3]/div/div[2]/div[4]/div[2]')
+
+pesq.categ_althoff()
 
 
+pesq.add_excel(f'PLANILHA ALTHOFF-LAGUNAs-{date.today()}.csv')
 
-
-
-
-PesqPrice.pesquisar_url("https://emcasa.althoff.com.br/categorias")
-
-
-PesqPrice.local('//*[@id="body"]/div[2]/div[3]/div/div[3]/div/div[2]/div[4]/div[2]')
-
-
-PesqPrice.categ_althoff()
-
-
-PesqPrice.add_excel(f'PLANILHA ALTHOFF-LAGUNAs-{date.today()}.csv')
+pesq.driver.quit()
 
 end_time = time.time()
 

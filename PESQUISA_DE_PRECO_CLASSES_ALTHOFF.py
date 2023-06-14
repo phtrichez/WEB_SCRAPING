@@ -11,7 +11,7 @@ from time import sleep
 class PesqPrice:
     def __init__(self, driver_path):
         self.driver = self._create_driver(driver_path)
-        self.wait = WebDriverWait(self.driver, 2)
+        self.wait = WebDriverWait(self.driver, 5)
         self.lista_produtos = []
         self.lista_preco = []
         self.lista_desconto = []
@@ -200,25 +200,3 @@ class PesqPrice:
         print("ACABou ")
 
 
-def main():
-    driver_path = 'C:\Program Files (x86)\chromedriver.exe'
-
-    url = 'https://emcasa.althoff.com.br/categorias'
-
-    pesq = PesqPrice(driver_path)
-    pesq.pesquisar_url(url)
-    pesq.local('//*[@id="body"]/div[2]/div[3]/div/div[3]/div/div[2]/div[4]/div[2]')
-
-    pesq.categ_althoff()
-
-    # Faça o processamento dos dados conforme necessário
-
-    # Adicione os dados a um arquivo Excel
-    pesq.add_excel('dados.xlsx')
-
-    # Feche o driver ao finalizar
-    pesq.driver.quit()
-
-
-if __name__ == '__main__':
-    main()
