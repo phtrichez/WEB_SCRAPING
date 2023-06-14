@@ -3,7 +3,7 @@ WEBSCRAPPING ALTHOFF:
 PASSO 1:
 instalar as bibliotecas;
 
-from selenium import webdriver
+from selenium import webdriver;
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.service import Service
