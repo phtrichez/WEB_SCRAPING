@@ -1,164 +1,224 @@
+import openpyxl
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from time import sleep
-import openpyxl
 
 
-    
+class PesqPrice:
+    def __init__(self, driver_path):
+        self.driver = self._create_driver(driver_path)
+        self.wait = WebDriverWait(self.driver, 2)
+        self.lista_produtos = []
+        self.lista_preco = []
+        self.lista_desconto = []
 
+    def _create_driver(self, driver_path):
+        service = Service(driver_path)
+        return webdriver.Chrome(service=service)
 
+    def pesquisar_url(self, url):
+        self.driver.get(url)
 
-    
-lista_produtos = list()
-lista_preco = list()
-lista_desconto = list()
-
-
-s = Service("C:\Program Files (x86)\chromedriver.exe")
-driver = webdriver.Chrome(service=s)
-wait = WebDriverWait(driver, 2)
-
-class PesqPrice:  
-    
-    def pesquisar_url(url): 
-        driver.get(f"{url}")
-
-
-    def local(XPATH):
-        driver.maximize_window()
-        element = wait.until(EC.element_to_be_clickable((By.XPATH, f'{XPATH}')))
-
-        local = driver.find_element(By.XPATH, f'{XPATH}')
+    def local(self, xpath):
+        self.driver.maximize_window()
+        element = self.wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
+        local = self.driver.find_element(By.XPATH, xpath)
         local.click()
 
-
-        element = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="body"]/div[2]/div[3]/div/div[4]/div/button')))
-        confirmar = driver.find_element(By.XPATH,'//*[@id="body"]/div[2]/div[3]/div/div[4]/div/button')
+        element = self.wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="body"]/div[2]/div[3]/div/div[4]/div/button')))
+        confirmar = self.driver.find_element(By.XPATH, '//*[@id="body"]/div[2]/div[3]/div/div[4]/div/button')
         confirmar.click()
 
-
-        element = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div[2]/div/div/button')))
-        cookie_button = driver.find_element(By.XPATH, '//*[@id="root"]/div[2]/div/div/button')
+        element = self.wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div[2]/div/div/button')))
+        cookie_button = self.driver.find_element(By.XPATH, '//*[@id="root"]/div[2]/div/div/button')
         cookie_button.click()
 
-
         sleep(2)
- 
 
-    def categ_althoff():
-        categs = driver.find_elements(By.CSS_SELECTOR, '.corridor-content-wrapper a')
+    def categ_althoff(self):
+        categs = self.driver.find_elements(By.CSS_SELECTOR, '.corridor-content-wrapper a')
 
-        cont = 0
-        lista_link = list()
-        for a in categs:
-            cont += 1
+        lista_link = []
+        for cont, a in enumerate(categs, start=1):
             link = a.get_attribute('href')
             teste = link.split('categorias/')[1]
-            if cont == len(categs):
-                lista_link.append(link)
-         
-            elif teste not in categs[cont].get_attribute('href'):
+            if cont == len(categs) or teste not in categs[cont].get_attribute('href'):
                 lista_link.append(link)
 
         for link in lista_link:
-            driver.get(link)
+            self.driver.get(link)
+            lista_id_prod = []
             cont_prod = 0
-            lista_id_prod = list()
-            
+            teste = 0
+
             while True:
                 cont_prod += 1
-                
-                try:
-                    element = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="page-scroll-element"]/div[2]/div[1]/div/div/div[3]/div/div/div/div/div/div[1]/div[1]/div/div/div[2]/button/i[1]')))
-                except:
-                    break
 
-                        
-
-                
-                
-                
                 try:
-                    id_preco = driver.find_element(By.XPATH, f'//*[@id="page-scroll-element"]/div[2]/div[1]/div/div/div[3]/div/div/div/div/div/div[1]/div[{cont_prod}]/div').get_attribute('data-product-id')
-                    lista_id_prod.append(id_preco)
-                    if str(id_preco) != 'None':
-                        preco = driver.find_element(By.XPATH, f'//*[@id="product-{id_preco}-price"]/div[1]').text
-                        print(preco)
-                        descricao = driver.find_element(By.XPATH, f'//*[@id="product-{id_preco}-price"]/div[2]/span').text
-                        print(descricao)
-                        
-                        try:
-                            preco_desconto = driver.find_element(By.XPATH, f'//*[@id="product-{id_preco}-price"]/a/span').text
-                            
-                        except:
-                            
-                            preco_desconto = driver.find_element(By.XPATH, f'//*[@id="product-{id_preco}-price"]/div[2]/span').text
-                                
-                                
-                            if len(preco_desconto.split('R$')) == 1:
-                                preco_desconto = ''
-                                
-                                
-                        
-                        lista_produtos.append(descricao)
-                        lista_preco.append(preco)
-                        lista_desconto.append(preco_desconto)
-                        print(descricao,preco_desconto,preco)
-            
-                                
-                                
-                            
-                            
-                    
-                except:
-                    if cont_prod > 10:
-                        cont_prod -= 1
-                        
-                        descer_pag = driver.find_element(By.XPATH, f'//*[@id="add-{lista_id_prod[len(lista_id_prod)-1]}-to-cart-btn"]')
-                        descer_pag.send_keys(Keys.PAGE_DOWN)
-                        sleep(1)
-                        subir_pag = driver.find_element(By.XPATH, f'//*[@id="add-{lista_id_prod[len(lista_id_prod)-3]}-to-cart-btn"]')
-                        subir_pag.send_keys(Keys.PAGE_UP)
-                        try:
-                            id_preco_novo = driver.find_element(By.XPATH, f'//*[@id="page-scroll-element"]/div[2]/div[1]/div/div/div[3]/div/div/div/div/div/div[1]/div[{cont_prod+3}]/div').get_attribute('data-product-id')
-                            print(id_preco_novo)
-                            element = wait.until(EC.element_to_be_clickable((By.XPATH, f'//*[@id="add-{id_preco_novo}-to-cart-btn"]')))
-                            
-                        except:
+                    if teste == 1:
+                        cont_prod.split('da')
+
+                    element = self.wait.until(EC.element_to_be_clickable((By.XPATH,
+                                                                           '//*[@id="page-scroll-element"]/div[2]/div[1]/div/div/div[3]/div/div/div/div/div/div[1]/div[1]/div/div/div[2]/button/i[1]')))
+                    teste = 0
+
+                    try:
+                        id_preco = self.driver.find_element(By.XPATH,
+                                                            f'//*[@id="page-scroll-element"]/div[2]/div[1]/div/div/div[3]/div/div/div/div/div/div[1]/div[{cont_prod}]/div').get_attribute(
+                            'data-product-id')
+                        lista_id_prod.append(id_preco)
+                        if id_preco is not None:
+                            preco = self.driver.find_element(By.XPATH,
+                                                             f'//*[@id="product-{id_preco}-price"]/div[1]').text
+                            descricao = self.driver.find_element(By.XPATH,
+                                                                 f'//*[@id="page-scroll-element"]/div[2]/div[1]/div/div/div[3]/div/div/div/div/div/div[1]/div[{cont_prod}]/div/div/div[3]/img').get_attribute(
+                                'alt')
+
+                            try:
+                                preco_desconto = self.driver.find_element(By.XPATH,
+                                                                         f'//*[@id="product-{id_preco}-price"]/a/span').text
+
+                            except:
+                                preco_desconto = self.driver.find_element(By.XPATH,
+                                                                         f'//*[@id="product-{id_preco}-price"]/div[2]/span').text
+
+                                if len(preco_desconto.split('R$')) == 1:
+                                    preco_desconto = ''
+
+                            self.lista_produtos.append(descricao)
+                            self.lista_preco.append(preco)
+                            self.lista_desconto.append(preco_desconto)
+                            print(descricao, preco_desconto, preco)
+
+                    except:
+                        if cont_prod > 10:
+                            cont_prod -= 1
+                            descer_pag = self.driver.find_element(By.XPATH,
+                                                                  f'//*[@id="add-{lista_id_prod[len(lista_id_prod) - 1]}-to-cart-btn"]')
+                            descer_pag.send_keys(Keys.PAGE_DOWN)
+                            sleep(1)
+                            subir_pag = self.driver.find_element(By.XPATH,
+                                                                 f'//*[@id="add-{lista_id_prod[len(lista_id_prod) - 3]}-to-cart-btn"]')
+                            subir_pag.send_keys(Keys.PAGE_UP)
+
+                            try:
+                                id_preco_novo = self.driver.find_element(By.XPATH,
+                                                                        f'//*[@id="page-scroll-element"]/div[2]/div[1]/div/div/div[3]/div/div/div/div/div/div[1]/div[{cont_prod + 3}]/div').get_attribute(
+                                    'data-product-id')
+                                element = self.wait.until(EC.element_to_be_clickable(
+                                    (By.XPATH, f'//*[@id="add-{id_preco_novo}-to-cart-btn"]')))
+
+                            except:
+                                break
+
+                        else:
                             break
-                        
-                    else:
-                        break
-                
-                                
-                
-                    
- 
 
-                        
-                    
-                        
-                        
-    def add_excel(nome_planilha):
+                except:
+                    try:
+                        element = self.wait.until(EC.element_to_be_clickable((By.XPATH,
+                                                                               '//*[@id="page-scroll-element"]/div[2]/div[2]/div/div/div[3]/div/div/div/div/div/div[1]/div[1]/div/div/div[2]/button/i[1]')))
+                        teste = 1
+
+                        try:
+                            id_preco = self.driver.find_element(By.XPATH,
+                                                                f'//*[@id="page-scroll-element"]/div[2]/div[2]/div/div/div[3]/div/div/div/div/div/div[1]/div[{cont_prod}]/div').get_attribute(
+                                'data-product-id')
+                            lista_id_prod.append(id_preco)
+                            if id_preco is not None:
+                                preco = self.driver.find_element(By.XPATH,
+                                                                 f'//*[@id="product-{id_preco}-price"]/div[1]').text
+                                descricao = self.driver.find_element(By.XPATH,
+                                                                     f'//*[@id="page-scroll-element"]/div[2]/div[2]/div/div/div[3]/div/div/div/div/div/div[1]/div[{cont_prod}]/div/div/div[3]/img').get_attribute(
+                                    'alt')
+
+                                try:
+                                    preco_desconto = self.driver.find_element(By.XPATH,
+                                                                             f'//*[@id="product-{id_preco}-price"]/a/span').text
+
+                                except:
+                                    preco_desconto = self.driver.find_element(By.XPATH,
+                                                                             f'//*[@id="product-{id_preco}-price"]/div[2]/span').text
+
+                                    if len(preco_desconto.split('R$')) == 1:
+                                        preco_desconto = ''
+
+                                self.lista_produtos.append(descricao)
+                                self.lista_preco.append(preco)
+                                self.lista_desconto.append(preco_desconto)
+                                print(descricao, preco_desconto, preco)
+
+                        except:
+                            if cont_prod > 10:
+                                cont_prod -= 1
+                                descer_pag = self.driver.find_element(By.XPATH,
+                                                                      f'//*[@id="add-{lista_id_prod[len(lista_id_prod) - 1]}-to-cart-btn"]')
+                                descer_pag.send_keys(Keys.PAGE_DOWN)
+                                sleep(1)
+                                subir_pag = self.driver.find_element(By.XPATH,
+                                                                     f'//*[@id="add-{lista_id_prod[len(lista_id_prod) - 3]}-to-cart-btn"]')
+                                subir_pag.send_keys(Keys.PAGE_UP)
+
+                                try:
+                                    id_preco_novo = self.driver.find_element(By.XPATH,
+                                                                            f'//*[@id="page-scroll-element"]/div[2]/div[2]/div/div/div[3]/div/div/div/div/div/div[1]/div[{cont_prod + 3}]/div').get_attribute(
+                                        'data-product-id')
+                                    element = self.wait.until(EC.element_to_be_clickable(
+                                        (By.XPATH, f'//*[@id="add-{id_preco_novo}-to-cart-btn"]')))
+
+                                except:
+                                    break
+
+                            else:
+                                break
+
+                    except:
+                        break
+
+    def add_excel(self,nome_planilha):
         book = openpyxl.Workbook()
         mercadorias = book['Sheet']
-        print(len(lista_produtos))
+        print(len(self.lista_produtos))
         mercadorias["A1"] = "ITEM"
         mercadorias["B1"] = "PREÇO"
         mercadorias["C1"] = "PREÇO ANTERIOR"
-        for c in range(0,len(lista_produtos)):
-            #print(c)
+        for c in range(0, len(self.lista_produtos)):
+            # print(c)
             d = c + 2
-            produto_excel = lista_produtos[c]
-            preco_excel = lista_preco[c]
-            desconto_excel = lista_desconto[c]
+            produto_excel = self.lista_produtos[c]
+            preco_excel = self.lista_preco[c]
+            desconto_excel = self.lista_desconto[c]
             mercadorias[f"A{d}"] = produto_excel
             mercadorias[f"B{d}"] = preco_excel
             mercadorias[f"C{d}"] = desconto_excel
-            
+
         book.save(f'{nome_planilha}')
         print("ACABou ")
+
+
+def main():
+    driver_path = 'C:\Program Files (x86)\chromedriver.exe'
+
+    url = 'https://emcasa.althoff.com.br/categorias'
+
+    pesq = PesqPrice(driver_path)
+    pesq.pesquisar_url(url)
+    pesq.local('//*[@id="body"]/div[2]/div[3]/div/div[3]/div/div[2]/div[4]/div[2]')
+
+    pesq.categ_althoff()
+
+    # Faça o processamento dos dados conforme necessário
+
+    # Adicione os dados a um arquivo Excel
+    pesq.add_excel('dados.xlsx')
+
+    # Feche o driver ao finalizar
+    pesq.driver.quit()
+
+
+if __name__ == '__main__':
+    main()
